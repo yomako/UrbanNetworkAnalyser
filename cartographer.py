@@ -11,6 +11,9 @@ Author - Tomasz Bałdyga
 import requests
 import codecs
 import json
+from pprint import pprint
+from stops_net_preparer import distance_in_m
+import numpy as np
 
 
 class Edge:
@@ -20,6 +23,7 @@ class Edge:
     destination = None
     destination_name = None
     route = None
+    distance = None
 
     def __init__(self, origin, destination, origin_name="", destination_name=""):
         '''
@@ -33,6 +37,13 @@ class Edge:
         self.destination = destination
         self.destination_name = destination_name
         self.route = []
+        s_origin = origin.split(',')
+        s_destination = destination.split(',')
+        print(distance_in_m(np.array([float(s_origin[0]), float(s_origin[1])]),
+                                      np.array([float(s_destination[0]), float(s_destination[1])])))
+        self.distance = distance_in_m(np.array([float(s_origin[0]), float(s_origin[1])]),
+                                      np.array([float(s_destination[0]), float(s_destination[1])]))
+        print(self.distance)
 
 
 def line_counter(file_name):
@@ -51,7 +62,7 @@ def get_request(end, waypoints, key):
     return request + "&key=" + key
 
 
-def string_maker(edges, start, key, result_filename, square_net_mode):
+def string_maker(edges, start, key, result_filename, square_net_mode=False):
     # making string of waypoints, sending requests, saving results to text file
     khy = 0
     for i in range(11):
@@ -213,3 +224,36 @@ def square_net_data_collector(city, quest):
                     exit(12)
 
         one += 1
+
+
+def stops_data_in_real_time_collector():
+    keys = load_keys()
+    s_edges = []
+    s_names = []
+    coordinates = []
+    for s_line in enumerate(open('RA180310_centered_stops_final.txt', encoding="utf8")):
+        m = s_line[1].split(" ")
+        coordinates.append("" + m[len(m) - 5] + "," + m[len(m) - 2])
+        s_name = ""
+        for ii in range(len(m) - 8):
+            if ii != 0:
+                s_name += " "
+                s_name += m[1 + ii]
+        s_name = s_name[:-1]
+        s_names.append(s_name)
+
+    for line in enumerate(open('net.txt', encoding="utf8")):
+        s_line = line[1].split(';')
+        so_line = s_line[1].split(':')
+        sd_line = s_line[2].split(':')
+        print(so_line[1])
+        print(sd_line[1])
+        print(s_line[3])
+        break
+
+
+if __name__ == "__main__":
+
+    #square_net_data_collector("warszawa", 40000)
+    #print(line_counter("krakow_net.txt"))
+    stops_data_in_real_time_collector()

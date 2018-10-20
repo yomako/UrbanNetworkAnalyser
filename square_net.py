@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import random
 from complement import complement
+from astropy.visualization import make_lupton_rgb
 
 
 class Square:
@@ -17,6 +18,8 @@ class Square:
     lng_min = None
     presence = None
     part_of_the_city = None
+    velocities = None
+    mean_velocity = None
 
     def __init__(self, lat_max, lat_min, lng_max, lng_min):
         self.lat_max = lat_max
@@ -28,6 +31,13 @@ class Square:
         if self.lng_max < self.lng_min:
             self.lng_max, self.lng_min = self.lng_min, self.lng_max
         self.part_of_the_city = False
+        self.velocities = []
+
+    def calculate_mean_velocity(self):
+        if len(self.velocities) != 0:
+            self.mean_velocity = sum(self.velocities)/len(self.velocities)
+        else:
+            self.mean_velocity = -1
 
     def contains(self, tlat, tlng):
         if (self.lat_min <= tlat <= self.lat_max) and (self.lng_min <= tlng <= self.lng_max):
@@ -222,6 +232,7 @@ class City:
         dif = []
         previous_step = step
         while True:
+            print(step)
             matrix = self.make_square_net(step)
             dif.append(abs((self.get_potc_count(matrix)/self.area) - self.superficial_density_standard))
             if ((self.get_potc_count(matrix)/self.area) - self.superficial_density_standard) > 0:
@@ -250,3 +261,8 @@ def field_of_the_earth():
             sq = Square(la, la+1, ln, ln+1)
             world_field += sq.get_field()
     print("Field of the Earth is {} km^2".format(world_field/1000000))
+
+
+if __name__ == "__main__":
+    ct = City("olsztyn")
+    mt = ct.fit_matrix(200)
